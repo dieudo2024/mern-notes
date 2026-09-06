@@ -6,6 +6,7 @@ import * as NotesApi from "../network/notes_api";
 import styles from "../styles/NotesPage.module.css";
 import styleUtils from "../styles/utils.module.css";
 import AddEditNoteDialog from "./AddEditNoteDialog";
+import DeleteNoteDialog from "./DeleteNoteDialog";
 import Note from './Note';
 
 const NotesPageLoggedInView = () => {
@@ -16,6 +17,7 @@ const NotesPageLoggedInView = () => {
 
     const [showAddNoteDialog, setShowAddNoteDialog] = useState(false);
     const [noteToEdit, setNoteToEdit] = useState<NoteModel | null>(null);
+    const [noteToDelete, setNoteToDelete] = useState<NoteModel | null>(null);
 
     useEffect(() => {
         async function loadNotes() {
@@ -34,16 +36,6 @@ const NotesPageLoggedInView = () => {
         loadNotes();
     }, []);
 
-    async function deleteNote(note: NoteModel) {
-        try {
-            await NotesApi.deleteNote(note._id);
-            setNotes(notes.filter(existingNote => existingNote._id !== note._id));
-        } catch (error) {
-            console.error(error);
-            alert(error);
-        }
-    }
-
     const notesGrid =
         <Row xs={1} md={2} xl={3} className={`g-4 ${styles.notesGrid}`}>
             {notes.map(note => (
@@ -52,7 +44,7 @@ const NotesPageLoggedInView = () => {
                         note={note}
                         className={styles.note}
                         onNoteClicked={setNoteToEdit}
-                        onDeleteNoteClicked={deleteNote}
+                        onDeleteNoteClicked={setNoteToDelete}
                     />
                 </Col>
             ))}
@@ -92,6 +84,16 @@ const NotesPageLoggedInView = () => {
                     onNoteSaved={(updatedNote) => {
                         setNotes(notes.map(existingNote => existingNote._id === updatedNote._id ? updatedNote : existingNote));
                         setNoteToEdit(null);
+                    }}
+                />
+            }
+            {noteToDelete &&
+                <DeleteNoteDialog
+                    noteToDelete={noteToDelete}
+                    onDismiss={() => setNoteToDelete(null)}
+                    onDeleteSuccessful={(deletedNote) => {
+                        setNotes(notes.filter(existingNote => existingNote._id !== deletedNote._id));
+                        setNoteToDelete(null);
                     }}
                 />
             }
