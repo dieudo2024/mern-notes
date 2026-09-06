@@ -97,6 +97,22 @@ export async function updateNote(noteId: string, note: NoteInput): Promise<Note>
     return response.json();
 }
 
+export interface UpdateNotePinStatusInput {
+    pinned: boolean,
+}
+
+export async function updateNotePinStatus(noteId: string, input: UpdateNotePinStatusInput): Promise<Note> {
+    const response = await fetchData("/api/notes/" + noteId + "/pin",
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(input),
+        });
+    return response.json();
+}
+
 export async function deleteNote(noteId: string) {
     await fetchData("/api/notes/" + noteId, { method: "DELETE" });
 }

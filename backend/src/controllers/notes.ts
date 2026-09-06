@@ -120,6 +120,50 @@ export const updateNote: RequestHandler<UpdateNoteParams, unknown, UpdateNoteBod
     }
 };
 
+interface UpdateNotePinStatusParams {
+    noteId: string,
+}
+
+interface UpdateNotePinStatusBody {
+    pinned?: unknown,
+}
+
+export const updateNotePinStatus: RequestHandler<UpdateNotePinStatusParams, unknown, UpdateNotePinStatusBody, unknown> = async (req, res, next) => {
+    const noteId = req.params.noteId;
+    const pinned = req.body.pinned;
+    const authenticatedUserId = req.session.userId;
+
+    try {
+        assertIsDefined(authenticatedUserId);
+
+        if (!mongoose.isValidObjectId(noteId)) {
+            throw createHttpError(400, "Invalid note id");
+        }
+
+        if (typeof pinned !== "boolean") {
+            throw createHttpError(400, "Pinned status must be a boolean");
+        }
+
+        const note = await NoteModel.findById(noteId).exec();
+
+        if (!note) {
+            throw createHttpError(404, "Note not found");
+        }
+
+        if (!note.userId.equals(authenticatedUserId)) {
+            throw createHttpError(401, "You cannot access this note");
+        }
+
+        note.pinned = pinned;
+
+        const updatedNote = await note.save();
+
+        res.status(200).json(updatedNote);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const deleteNote: RequestHandler = async (req, res, next) => {
     const noteId = req.params.noteId;
     const authenticatedUserId = req.session.userId;

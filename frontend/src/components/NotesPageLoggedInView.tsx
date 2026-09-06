@@ -36,15 +36,28 @@ const NotesPageLoggedInView = () => {
         loadNotes();
     }, []);
 
+    async function handleTogglePin(note: NoteModel) {
+        try {
+            const updatedNote = await NotesApi.updateNotePinStatus(note._id, { pinned: !note.pinned });
+            setNotes(notes.map(existingNote => existingNote._id === updatedNote._id ? updatedNote : existingNote));
+        } catch (error) {
+            console.error(error);
+            alert(error);
+        }
+    }
+
+    const sortedNotes = [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+
     const notesGrid =
         <Row xs={1} md={2} xl={3} className={`g-4 ${styles.notesGrid}`}>
-            {notes.map(note => (
+            {sortedNotes.map(note => (
                 <Col key={note._id}>
                     <Note
                         note={note}
                         className={styles.note}
                         onNoteClicked={setNoteToEdit}
                         onDeleteNoteClicked={setNoteToDelete}
+                        onPinNoteClicked={handleTogglePin}
                     />
                 </Col>
             ))}
