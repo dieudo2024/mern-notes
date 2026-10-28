@@ -1,7 +1,42 @@
-# Complete MERN Beginner Course [2023]
+# Week 9 - Thursday session — MERN CI/CD
 
-Watch the course here: https://www.youtube.com/watch?v=FcxjCPeicvU
+Implement a single-job GitHub Actions workflow that tests this app, builds its
+Docker images, and publishes them to GHCR. Start from the calculator workflow;
+Docker/GHCR snippets are supplied in [the lab](docs/student-lab.md).
 
-**Each part of the course has a corresponding branch you can check out.**
+The starter includes development Dockerfiles (CRA and Nodemon), seven tests,
+and three Compose configurations. Publishing and local verification are in scope;
+online deployment is not.
 
-![thumbnail](https://user-images.githubusercontent.com/52977034/212036784-9ea937a6-f6d7-4d1f-8acf-f2975ff7ab5c.png)
+## Local verification
+
+Work individually in your own fork. With Docker Desktop running, copy
+`.env.example` to `.env` and set `SESSION_SECRET`. Run from the repository root:
+
+```sh
+docker compose up --build -d --wait
+```
+
+Verify the app at http://localhost:3000, then run the supplied checks:
+
+```sh
+docker compose -f compose.test.yaml build
+docker compose -f compose.test.yaml run --rm backend-test
+docker compose -f compose.test.yaml run --rm frontend-test
+docker compose -f compose.test.yaml run --rm backend-test npm run lint
+docker compose -f compose.test.yaml run --rm backend-test npm run typecheck
+docker compose -f compose.test.yaml down --volumes
+```
+
+The test commands use a separate temporary MongoDB automatically; no database
+setup is needed. After editing code or tests, rerun the relevant build command
+so the containers include your changes. `docker compose down` stops the app and
+keeps its saved data; adding `--volumes` deletes that data. Keep `.env` out of Git.
+
+| Configuration | Use |
+| --- | --- |
+| `compose.yaml` | Build and run locally |
+| `compose.test.yaml` | Tests, lint, and type checking |
+| `compose.published.yaml` | Pull and run GHCR images |
+
+
