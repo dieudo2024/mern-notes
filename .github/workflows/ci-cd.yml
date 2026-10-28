@@ -32,10 +32,6 @@ jobs:
       - name: Check backend TypeScript
         run: docker compose -f compose.test.yaml run --rm backend-test npm run typecheck
 
-      - name: Clean up the test environment
-        if: always()
-        run: docker compose -f compose.test.yaml down --volumes
-
       - name: Prepare image names
         shell: bash
         run: |
@@ -66,3 +62,7 @@ jobs:
           docker push "$FRONTEND_IMAGE:sha-$GITHUB_SHA"
           docker push "$BACKEND_IMAGE:latest"
           docker push "$FRONTEND_IMAGE:latest"
+
+      - name: Clean up the test environment
+        if: always()
+        run: docker compose -f compose.test.yaml down --volumes
